@@ -20,12 +20,13 @@ func user(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	recover()
 	server := NewHttpServer("my-server")
 
 	//server.Route("/", home)
 	//server.Route("/wholeUrl", wholeUrl)
 	// 注册路由
-	server.Route("post", "/signUp", SignUp)
+	server.Route(http.MethodPost, "/signUp", SignUp)
 
 	// 启动服务
 	err := server.Start("localhost:9090")

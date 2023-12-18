@@ -6,33 +6,47 @@ import (
 
 // Server http server 的顶级抽象
 type Server interface {
-	Route(method, pattern string, handlerFunc func(ctx *Context))
+	Routable
 	Start(address string) error
 }
 
 // sdkHttpServer 基于 http 库实现
 type sdkHttpServer struct {
 	Name    string
-	handler *HandlerBaseOnMap
+	handler Handler
+	root    Filter
 }
 
 // Route 路由注册
 func (s sdkHttpServer) Route(method, pattern string, handlerFunc func(ctx *Context)) {
-	key := s.handler.key(method, pattern)
-	s.handler.handlers[key] = handlerFunc
+	s.handler.Route(method, pattern, handlerFunc)
 }
 
 // Start 启动服务
 func (s sdkHttpServer) Start(address string) error {
-	http.Handle("/", s.handler)
+	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		ctx := NewContext(writer, request)
+		s.root(ctx)
+	})
 	return http.ListenAndServe(address, nil)
 }
 
 // NewHttpServer 创建服务
-func NewHttpServer(name string) Server {
+func NewHttpServer(name string, builders ...FilterBuilder) Server {
+	handler := NewHandlerBaseOnMap()
+	var root Filter = func(ctx *Context) {
+		handler.ServeHTTP(ctx.W, ctx.R)
+	}
+
+	for i := len(builders) - 1; i >= 0; i-- {
+		b := builders[i]
+		root = b(root)
+	}
+
 	return &sdkHttpServer{
 		Name:    name,
-		handler: &HandlerBaseOnMap{make(map[string]func(ctx *Context))},
+		handler: handler,
+		root:    root,
 	}
 }
 
