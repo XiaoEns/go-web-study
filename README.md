@@ -1,2 +1,2 @@
-# gin study
-gin study
+# gorm study
+gorm study
