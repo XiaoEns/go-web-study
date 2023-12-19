@@ -1,2 +1,2 @@
-# go-web-study
-go web study
+# gin study
+gin study
