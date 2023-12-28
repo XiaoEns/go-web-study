@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+// 指定生成的 go 文件存放的位置以及文件的包名
+option go_package = ".;service"; // 在当前目录下生产，文件的包名为 service
+
+message HelloRequest {
+  string requestName = 1;
+}
+
+message HelloResponse {
+  string responseMsg = 1;
+}
+
+service SayHello {
+  rpc SayHello(HelloRequest) returns (HelloResponse) {}
+}
